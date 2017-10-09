@@ -37,7 +37,7 @@ module.exports = function bundleWidget(id, filePath) {
 
   bundle.plugin(watchify);
   bundle.require(filePath, { expose: id });
-  bundle.external('run');
+  bundle.external('uebersicht');
 
   if (filePath.match(/\.coffee$/)) {
     bundle.transform(coffeeify, {
