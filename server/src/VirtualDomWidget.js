@@ -18,14 +18,13 @@ const defaults = {
   render: function render(props) {
     return html('div', null, props.output);
   },
-  updateProps: function updateProps(props, action) {
+  updateState: function updateState(action) {
     if (action.type === 'UB/COMMAND_RAN') {
       return { error: action.error, output: action.output };
-    } else {
-      return props;
     }
+    return props;
   },
-  initialProps: { output: '', error: null },
+  initialState: { output: '', error: null },
 };
 
 module.exports = function VirtualDomWidget(widgetObject) {
@@ -63,7 +62,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
 
   function dispatch(action) {
     renderLoop.update(
-      implementation.updateProps(renderLoop.state, action)
+      implementation.updateState(action, renderLoop.state)
     );
   }
 
@@ -85,7 +84,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
     document.body.appendChild(wrapperEl);
 
     renderLoop = RenderLoop(
-      implementation.initialProps,
+      implementation.initialState,
       render,
       patch,
       contentEl
