@@ -2,11 +2,11 @@
 
 const runShellCommand = require('./runShellCommand');
 
-module.exports = function runCommand(widget, callback) {
+module.exports = function runCommand(widget, callback, dispatch) {
   const {command, refreshFrequency} = widget;
 
   if (typeof command === 'function') {
-    command.apply(widget, [callback]);
+    command.apply(widget, [callback, dispatch]);
   } else if (typeof command === 'string') {
     runShellCommand(command, callback).timeout(refreshFrequency);
   } else {

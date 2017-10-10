@@ -49,13 +49,17 @@ module.exports = function VirtualDomWidget(widgetObject) {
   }
 
   function start() {
-    implementation.init();
+    implementation.init(dispatch);
     commandLoop = Timer()
       .map((done) => {
-        runCommand(implementation, (err, output) => {
-          dispatch({ type: 'UB/COMMAND_RAN', error: err, output: output });
-          done(implementation.refreshFrequency);
-        });
+        runCommand(
+          implementation,
+          (err, output) => {
+            dispatch({ type: 'UB/COMMAND_RAN', error: err, output: output });
+            done(implementation.refreshFrequency);
+          },
+          dispatch
+        );
       })
       .start();
   }
