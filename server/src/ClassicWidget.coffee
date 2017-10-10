@@ -99,7 +99,7 @@ module.exports = ClassicWidget = (widgetObject) ->
 
   redraw = (error, output) ->
     if error
-      contentEl.innerHTML = error
+      contentEl.innerHTML = error.message
       console.error "#{implementation.id}:", error
       return rendered = false
 
