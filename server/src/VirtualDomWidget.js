@@ -5,7 +5,7 @@ const snabbdom = require('snabbdom');
 const html = require('snabbdom-jsx').html;
 
 const patch = snabbdom.init([
-  require('snabbdom/modules/class').default,
+  require('./SnabbdomCssModule'),
   require('snabbdom/modules/props').default,
   require('snabbdom/modules/style').default,
   require('snabbdom/modules/eventlisteners').default,
