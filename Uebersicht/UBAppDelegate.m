@@ -79,7 +79,7 @@ int const PORT = 41416;
         screens: screensController
     ];
     [widgetsStore onChange: ^(NSDictionary* widgets) {
-        [widgetsController render];
+        [self->widgetsController render];
     }];
     
     // make sure notifcations always show
@@ -128,23 +128,23 @@ int const PORT = 41416;
     void (^handleData)(NSString*) = ^(NSString* output) {
         // note that these might be called several times
         if ([output rangeOfString:@"server started"].location != NSNotFound) {
-            [widgetsStore reset];
+            [self->widgetsStore reset];
             [[UBWebSocket sharedSocket] open:[self serverUrl:@"ws"]];
             // this will trigger a render
-            [screensController syncScreens:self];
+            [self->screensController syncScreens:self];
 
         } else if ([output rangeOfString:@"EADDRINUSE"].location != NSNotFound) {
-            portOffset++;
+            self->portOffset++;
         }
     };
 
     void (^handleExit)(NSTask*) = ^(NSTask* theTask) {
         [self shutdown];
-        if (portOffset >= 20) {
-            keepServerAlive = NO;
+        if (self->portOffset >= 20) {
+            self->keepServerAlive = NO;
             NSLog(@"couldn't find an open port. Giving up...");
         }
-        if (keepServerAlive) {
+        if (self->keepServerAlive) {
             [self
                 performSelector: @selector(startUp)
                 withObject: nil
