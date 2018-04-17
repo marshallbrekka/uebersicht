@@ -45,7 +45,7 @@
     "redux": "^3.7.2",
     "serve-static": "^1.13.1",
     "snabbdom": "^0.7.0",
-    "snabbdom-jsx": "^0.4.2",
+    "snabbdom-pragma": "^2.6.0",
     "stylus": "~0.54.5",
     "superagent": "^3.6.3",
     "through2": "^2.0.3",

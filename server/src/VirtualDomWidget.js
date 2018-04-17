@@ -2,11 +2,13 @@ const RenderLoop = require('./RenderLoop');
 const Timer = require('./Timer');
 const runCommand = require('./runCommand');
 const snabbdom = require('snabbdom');
-const html = require('snabbdom-jsx').html;
+const html = require('snabbdom-pragma').createElement;
+window.html = html;
 
 const patch = snabbdom.init([
   require('./SnabbdomCssModule'),
   require('snabbdom/modules/props').default,
+  require('snabbdom/modules/attributes').default,
   require('snabbdom/modules/style').default,
   require('snabbdom/modules/eventlisteners').default,
 ]);
