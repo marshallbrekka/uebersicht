@@ -23,6 +23,10 @@ module.exports = function WidgetBundler() {
     }
   };
 
+  api.get = function get(id) {
+    return bundles[id].widget.body;
+  };
+
   function addWidget(id, filePath, emit) {
     if (!bundles[id]) {
       bundles[id] = WidgetBundle(id, filePath, (widget) => {
@@ -57,6 +61,7 @@ module.exports = function WidgetBundler() {
           }
 
           widget.mtime = fs.statSync(filePath).mtime;
+          bundle.widget = widget;
           callback(widget);
         });
       });

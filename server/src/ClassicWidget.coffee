@@ -27,7 +27,7 @@ module.exports = ClassicWidget = (widgetObject) ->
   implementation = {}
 
   init = (widget) ->
-    implementation = eval(widget.body)(widget.id);
+    implementation = widget.implementation;
     implementation.id == widget.id
 
     implementation[k] ?= v for k, v of defaults

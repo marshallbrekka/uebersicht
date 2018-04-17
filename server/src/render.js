@@ -47,7 +47,7 @@ function render(state, screen, domEl, dispatch) {
 
   for (var id in state.widgets) {
     const widget = state.widgets[id];
-    if (!isVisibleOnScreen(id, screen, state)) {
+    if (!widget.implementation || !isVisibleOnScreen(id, screen, state)) {
       continue;
     }
     if (widget.error) {

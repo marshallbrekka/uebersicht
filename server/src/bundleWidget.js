@@ -28,12 +28,13 @@ function wrapJSWidget() {
 }
 
 module.exports = function bundleWidget(id, filePath) {
+  const isJsxWidget = filePath.match(/\.jsx$/);
   const bundle = browserify(filePath, {
     detectGlobals: false,
     cache: {},
     packageCache: {},
+    debug: isJsxWidget,
   });
-
 
   bundle.plugin(watchify);
   bundle.require(filePath, { expose: id });
@@ -44,15 +45,18 @@ module.exports = function bundleWidget(id, filePath) {
       bare: true,
       header: false,
     });
-  } else if (filePath.match(/\.jsx$/)) {
+    bundle.transform(widgetify, { id: id });
+  } else if (isJsxWidget) {
     bundle.transform(babelify, {
       presets: [es2015],
-      plugins: [restSpreadTransform, [jsxTransform, { pragma: 'html' }]],
+      plugins: [
+        restSpreadTransform,
+        [jsxTransform, { pragma: 'html' }],
+      ],
     });
   } else {
     bundle.transform(wrapJSWidget);
+    bundle.transform(widgetify, { id: id });
   }
-
-  bundle.transform(widgetify, { id: id });
   return bundle;
 };

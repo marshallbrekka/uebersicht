@@ -37,7 +37,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
   let renderLoop;
 
   function init(widget) {
-    implementation = eval(widget.body)(widget.id);
+    implementation = widget.implementation;
     implementation.id = widget.id;
 
     for (var k in defaults) {
@@ -75,9 +75,10 @@ module.exports = function VirtualDomWidget(widgetObject) {
   function render(state) {
     try {
       return implementation.render(state, dispatch);
-    } catch (e) {
-      console.error(e);
-      return html('div', {}, e.message);
+    } catch (err) {
+      console.error(err);
+      commandLoop.stop();
+      return html('div', {}, err.message);
     }
   }
 

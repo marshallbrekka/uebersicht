@@ -15,11 +15,20 @@ window.onload = ->
   getState (err, initialState) ->
     bail err, 10000 if err?
     store = redux.createStore(reducer, initialState)
+    Object.keys(initialState.widgets).forEach (id) ->
+      fetchWidget(id)
+        .then (widgetImpl) -> store.dispatch(widgetLoaded(id, widgetImpl))
+
     store.subscribe ->
       render(store.getState(), screenId, contentEl, store.dispatch)
     listenToRemote (action) ->
       if action.type == 'WIDGET_WANTS_REFRESH'
         render.rendered[action.payload]?.instance?.forceRefresh()
+      else if action.type == 'WIDGET_ADDED'
+        store.dispatch(action)
+        fetchWidget(action.payload.id)
+          .then (widgetImpl) ->
+            store.dispatch(widgetLoaded(action.payload.id, widgetImpl))
       else
         store.dispatch(action)
     render(initialState, screenId, contentEl, store.dispatch)
@@ -38,6 +47,24 @@ getState = (callback) ->
   $.get("/state/")
     .done((response) -> callback null, JSON.parse(response))
     .fail -> callback response, null
+
+fetchWidget = (id) -> new Promise (resolve, reject) ->
+  scriptTag = document.createElement('SCRIPT')
+  scriptTag.id = id
+  scriptTag.src = '/widgets/' + id
+  scriptTag.onload = ->
+    console.log 'loaded' + id
+    document.head.removeChild(scriptTag)
+    resolve(require(id))
+  scriptTag.onerror = (err) ->
+    document.head.removeChild(scriptTag)
+    reject(err)
+  document.head.appendChild(scriptTag)
+
+widgetLoaded = (id, impl) ->
+  type: 'WIDGET_LOADED',
+  id: id,
+  payload: impl
 
 bail = (err, timeout = 0) ->
   console.log err if err?
