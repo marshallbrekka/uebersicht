@@ -57,9 +57,6 @@ int const PORT = 41416;
     // So, hit em with a hammer :(
     system("killall localnode");
     
-    // start server and load webview
-    portOffset = 0;
-    [self startUp];
     
     // listen for keyboard events
     keyHandler = [[UBKeyHandler alloc]
@@ -116,6 +113,10 @@ int const PORT = 41416;
         name: NSWorkspaceSessionDidResignActiveNotification
         object: nil
     ];
+    
+    // start server and load webview
+    portOffset = 0;
+    [self startUp];
     
     [self listenToWallpaperChanges];
 }
