@@ -47,12 +47,12 @@ function render(state, screen, domEl, dispatch) {
 
   for (var id in state.widgets) {
     const widget = state.widgets[id];
-    if (!widget.implementation || !isVisibleOnScreen(id, screen, state)) {
+    if (!isVisibleOnScreen(id, screen, state)) {
       continue;
     }
     if (widget.error) {
       console.error(widget.error);
-    } else {
+    } else if (widget.implementation) {
       renderWidget(widget, domEl, dispatch);
     }
     const idx = remaining.indexOf(widget.id);

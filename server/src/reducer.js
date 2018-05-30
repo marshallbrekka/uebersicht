@@ -148,14 +148,11 @@ function updateSettings(state, widgetId, patch) {
 
 module.exports = function reduce(state, action) {
   let newState;
-  console.log(action)
-
   const handler = handlers[action.type];
   if (handler) {
     newState = handler(state, action);
   } else {
     newState = state;
   }
-
   return newState;
 };
