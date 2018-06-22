@@ -1,6 +1,7 @@
 var raf = require('raf');
+const ReactDom = require('react-dom');
 
-module.exports = function RenderLoop(initialState, render, patch, target) {
+module.exports = function RenderLoop(initialState, render, target) {
   var currentState = null;
   var oldNode = target;
   var redrawScheduled = false;
@@ -34,10 +35,8 @@ module.exports = function RenderLoop(initialState, render, patch, target) {
     }
 
     inRenderingTransaction = true;
-    var newNode = render(currentState);
+    ReactDom.render(render(currentState), target);
     inRenderingTransaction = false;
-
-    oldNode = patch(oldNode, newNode);
     currentState = null;
   }
 
