@@ -1,15 +1,12 @@
 var raf = require('raf');
-const ReactDom = require('react-dom');
 
-module.exports = function RenderLoop(initialState, render, target) {
+module.exports = function RenderLoop(initialState, render) {
   var currentState = null;
-  var oldNode = target;
   var redrawScheduled = false;
   var inRenderingTransaction = false;
 
   var loop = {
     state: initialState,
-    target: target,
     update: update,
   };
 
@@ -35,7 +32,11 @@ module.exports = function RenderLoop(initialState, render, target) {
     }
 
     inRenderingTransaction = true;
-    ReactDom.render(render(currentState), target);
+    try {
+      render(currentState);
+    } catch (err) {
+      console.error(err);
+    }
     inRenderingTransaction = false;
     currentState = null;
   }

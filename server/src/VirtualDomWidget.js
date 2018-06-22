@@ -1,6 +1,7 @@
 const RenderLoop = require('./RenderLoop');
 const Timer = require('./Timer');
 const runCommand = require('./runCommand');
+const ReactDom = require('react-dom');
 const html = require('react').createElement;
 window.html = html;
 
@@ -63,14 +64,20 @@ module.exports = function VirtualDomWidget(widgetObject) {
     );
   }
 
-  function render(state) {
+  const render = (domEl) => (state) => {
     try {
-      return implementation.render(state, dispatch);
+      ReactDom.render(
+        implementation.render(state, dispatch),
+        domEl
+      );
     } catch (err) {
       commandLoop.stop();
-      return html('div', {}, err.message);
+      ReactDom.render(
+        html('div', {}, err.message),
+        domEl
+      );
     }
-  }
+  };
 
   api.create = function create() {
     const contentEl = document.createElement('div');
@@ -82,8 +89,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
 
     renderLoop = RenderLoop(
       implementation.initialState,
-      render,
-      contentEl
+      render(contentEl)
     );
 
     start();
