@@ -24,85 +24,100 @@ const defaults = {
 module.exports = function VirtualDomWidget(widgetObject) {
   const api = {};
   let implementation;
-  let wrapperEl;
+  let contentEl;
   let commandLoop;
   let renderLoop;
+  let currentError;
 
   function init(widget) {
-    implementation = widget.implementation;
+    currentError = null;
+    implementation = Object.create(defaults);
+    Object.assign(implementation, widget.implementation);
     implementation.id = widget.id;
-
-    for (var k in defaults) {
-      if (implementation[k] === undefined ||
-          implementation[k] === null) {
-        implementation[k] = defaults[k];
-      }
-    }
-
     return api;
   }
 
   function start() {
     implementation.init(dispatch);
-    commandLoop = Timer()
-      .map((done) => {
-        runCommand(
-          implementation,
-          (err, output) => {
-            dispatch({ type: 'UB/COMMAND_RAN', error: err, output: output });
-            done(implementation.refreshFrequency);
-          },
-          dispatch
-        );
-      })
-      .start();
+    commandLoop = Timer().start().map((done) => {
+      try {
+        runWidgetCommand(done);
+      } catch (err) {
+        handleError(err);
+      }
+    });
+  }
+
+  function runWidgetCommand(done) {
+    runCommand(
+      implementation,
+      (err, output) => {
+        dispatch({ type: 'UB/COMMAND_RAN', error: err, output: output });
+        done(implementation.refreshFrequency);
+      },
+      dispatch
+    );
   }
 
   function dispatch(action) {
-    renderLoop.update(
-      implementation.updateState(action, renderLoop.state)
-    );
+    try {
+      const nextState = implementation.updateState(action, renderLoop.state);
+      renderLoop.update(nextState);
+    } catch (err) {
+      handleError(err);
+    }
   }
 
-  const render = (domEl) => (state) => {
+  function fetchErrorDetails(err) {
+    return fetch(
+      `/widgets/${widgetObject.id}?line=${err.line}&column=${err.column}`
+      )
+      .then(res => res.text());
+  }
+
+  function render(state) {
     try {
-      ReactDom.render(
-        implementation.render(state, dispatch),
-        domEl
-      );
+      ReactDom.render(implementation.render(state, dispatch), contentEl);
     } catch (err) {
-      commandLoop.stop();
-      ReactDom.render(
-        html('div', {}, err.message),
-        domEl
-      );
+      handleError(err);
     }
-  };
+  }
+
+  function handleError(err) {
+    currentError = err;
+    commandLoop.stop();
+    fetchErrorDetails(err).then(details => {
+      if (err !== currentError) return;
+      ReactDom.render(
+        html('pre', {}, err.message + '\n\n' + details),
+        contentEl
+      );
+    });
+  }
 
   api.create = function create() {
-    const contentEl = document.createElement('div');
-    wrapperEl = document.createElement('div');
-    wrapperEl.id = implementation.id;
-    wrapperEl.className = 'widget';
-    wrapperEl.appendChild(contentEl);
-    document.body.appendChild(wrapperEl);
+    contentEl = document.createElement('div');
+    contentEl.id = implementation.id;
+    contentEl.className = 'widget';
+    document.body.appendChild(contentEl);
 
     renderLoop = RenderLoop(
       implementation.initialState,
-      render(contentEl)
+      render
     );
 
     start();
-    return wrapperEl;
+    return contentEl;
   };
 
   api.destroy = function destroy() {
     commandLoop.stop();
-    if (wrapperEl && wrapperEl.parentNode) {
-      wrapperEl.parentNode.removeChild(wrapperEl);
+    if (contentEl && contentEl.parentNode) {
+      contentEl.parentNode.removeChild(contentEl);
     }
     renderLoop = null;
-    wrapperEl = null;
+    contentEl = null;
+    currentError = null;
   };
 
   api.update = function update(newImplementation) {
