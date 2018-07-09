@@ -3,6 +3,7 @@ const Timer = require('./Timer');
 const runCommand = require('./runCommand');
 const ReactDom = require('react-dom');
 const html = require('react').createElement;
+const ErrorDetails = require('./ErrorDetails');
 window.html = html;
 
 const defaults = {
@@ -32,8 +33,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
   function init(widget) {
     currentError = null;
     implementation = Object.create(defaults);
-    Object.assign(implementation, widget.implementation);
-    implementation.id = widget.id;
+    Object.assign(implementation, widget.implementation, {id: widget.id});
     return api;
   }
 
@@ -72,7 +72,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
     return fetch(
       `/widgets/${widgetObject.id}?line=${err.line}&column=${err.column}`
       )
-      .then(res => res.text());
+      .then(res => res.json());
   }
 
   function render(state) {
@@ -89,7 +89,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
     fetchErrorDetails(err).then(details => {
       if (err !== currentError) return;
       ReactDom.render(
-        html('pre', {}, err.message + '\n\n' + details),
+        html(ErrorDetails, Object.assign({message: err.message}, details)),
         contentEl
       );
     });

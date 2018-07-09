@@ -4,9 +4,10 @@ const SourceMapConsumer = require('source-map').SourceMapConsumer;
 const convert = require('convert-source-map');
 const {Transform} = require('stream');
 const byline = require('byline');
+const path = require('path');
 
 // middleware to serve widget bundles
-module.exports = (bundler) => (req, res, next) => {
+module.exports = (bundler, widgetPath) => (req, res, next) => {
   const url = URL.parse(req.url, true);
   const match = url.pathname.match(/\/widgets\/(.+)$/);
   if (match) {
@@ -15,26 +16,38 @@ module.exports = (bundler) => (req, res, next) => {
       res.writeHead(404);
       return res.end();
     }
-    return url.search ? codeLines(code, url.query, res) : res.end(code);
+    return url.search
+      ? codeLines(code, widgetPath, url.query, res)
+      : res.end(code);
   }
 
   return next();
 };
 
-function grabLines(lineNum, padding) {
+function asErrorJSON(codeLocation, padding) {
+  const lineNum = codeLocation.line;
   let i = 0;
+  let lines = [];
   return new Transform({
     transform(line, _, next) {
       if (i >= lineNum - padding && i < lineNum + padding) {
-        this.push(i + 1 + ': ' + line + '\n', 'utf8');
+        lines.push({lineNum: i + 1, line: line.toString()});
       }
       i++;
       next();
     },
+    flush(done) {
+      done(null, JSON.stringify({
+        line: codeLocation.line,
+        column: codeLocation.column,
+        lines: lines,
+        path: codeLocation.path,
+      }));
+    },
   });
 }
 
-function codeLines(source, options, res) {
+function codeLines(source, widgetDir, options, res) {
   const padding = 5;
   const lineNum = Number(options.line) || 0;
   const column = Number(options.column) || 0;
@@ -53,8 +66,10 @@ function codeLines(source, options, res) {
       res.end('no match found for line ' + lineNum + ':' + column + '\n');
       return;
     }
+
+    origpos.path = path.relative(widgetDir, origpos.source);
     byline(fs.createReadStream(origpos.source), {keepEmptyLines: true})
-      .pipe(grabLines(origpos.line, padding))
+      .pipe(asErrorJSON(origpos, padding))
       .pipe(res)
       .on('error', err => {
         res.writeHead(500);
