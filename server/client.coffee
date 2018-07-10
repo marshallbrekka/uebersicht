@@ -33,6 +33,7 @@ window.onload = ->
         render.rendered[action.payload]?.instance?.forceRefresh()
       else if action.type == 'WIDGET_ADDED'
         store.dispatch(action)
+        return if action.payload.error
         fetchWidget(action.payload.id)
           .then (widgetImpl) ->
             store.dispatch(actions.showWidget(action.payload.id, widgetImpl))

@@ -31,13 +31,26 @@ module.exports = function VirtualDomWidget(widgetObject) {
   let currentError;
 
   function init(widget) {
-    currentError = null;
+    currentError = widget.error ? JSON.parse(widget.error) : undefined;
     implementation = Object.create(defaults);
-    Object.assign(implementation, widget.implementation, {id: widget.id});
+    Object.assign(implementation, widget.implementation || {}, {id: widget.id});
     return api;
   }
 
   function start() {
+    if (currentError) {
+      renderErrorDetails(currentError);
+      return;
+    }
+    if (renderLoop) {
+      renderLoop.update(renderLoop.state); // force redraw
+    } else {
+      renderLoop = RenderLoop(implementation.initialState, render);
+    }
+    run();
+  }
+
+  function run() {
     implementation.init(dispatch);
     commandLoop = Timer().start().map((done) => {
       try {
@@ -88,11 +101,12 @@ module.exports = function VirtualDomWidget(widgetObject) {
     commandLoop.stop();
     fetchErrorDetails(err).then(details => {
       if (err !== currentError) return;
-      ReactDom.render(
-        html(ErrorDetails, Object.assign({message: err.message}, details)),
-        contentEl
-      );
+      renderErrorDetails(Object.assign({message: err.message}, details));
     });
+  }
+
+  function renderErrorDetails(details) {
+    ReactDom.render(html(ErrorDetails, details), contentEl);
   }
 
   api.create = function create() {
@@ -100,18 +114,12 @@ module.exports = function VirtualDomWidget(widgetObject) {
     contentEl.id = implementation.id;
     contentEl.className = 'widget';
     document.body.appendChild(contentEl);
-
-    renderLoop = RenderLoop(
-      implementation.initialState,
-      render
-    );
-
     start();
     return contentEl;
   };
 
   api.destroy = function destroy() {
-    commandLoop.stop();
+    commandLoop && commandLoop.stop();
     if (contentEl && contentEl.parentNode) {
       contentEl.parentNode.removeChild(contentEl);
     }
@@ -121,9 +129,8 @@ module.exports = function VirtualDomWidget(widgetObject) {
   };
 
   api.update = function update(newImplementation) {
-    commandLoop.stop();
+    commandLoop && commandLoop.stop();
     init(newImplementation);
-    renderLoop.update(renderLoop.state); // force redraw
     start();
   };
 

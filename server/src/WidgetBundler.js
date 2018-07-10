@@ -55,7 +55,7 @@ module.exports = function WidgetBundler() {
         if (couldNotRead) return;
         bundle.bundle((err, srcBuffer) => {
           if (err) {
-            widget.error = prettyPrintError(filePath, err);
+            widget.error = errorJSON(filePath, err);
           } else {
             widget.body = srcBuffer.toString();
           }
@@ -70,6 +70,27 @@ module.exports = function WidgetBundler() {
     bundle.on('update', buildWidget);
     buildWidget();
     return bundle;
+  }
+
+  function errorJSON(filePath, error) {
+    return JSON.stringify({
+      line: error.loc.line,
+      column: error.loc.column,
+      lines: parseCodeFrame(error.codeFrame),
+      path: filePath,
+      message: error.message,
+    });
+  }
+
+  function parseCodeFrame(codeFrame) {
+    return codeFrame
+      .split('\n')
+      .map(l => {
+        const [num, line] = l.split('|', 2);
+        const lineNum = parseInt(num.replace(/^>/, ''), 10);
+        return isNaN(lineNum) ? undefined : {lineNum: lineNum, line: line};
+      })
+      .filter(i => i);
   }
 
   function prettyPrintError(filePath, error) {
