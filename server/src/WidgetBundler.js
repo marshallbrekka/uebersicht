@@ -73,6 +73,15 @@ module.exports = function WidgetBundler() {
   }
 
   function errorJSON(filePath, error) {
+    if (!error._babel) {
+      return JSON.stringify({
+        line: error.line,
+        column: error.column,
+        path: filePath,
+        lines: error.annotated,
+        message: error.message,
+      });
+    }
     return JSON.stringify({
       line: error.loc.line,
       column: error.loc.column,
@@ -91,23 +100,6 @@ module.exports = function WidgetBundler() {
         return isNaN(lineNum) ? undefined : {lineNum: lineNum, line: line};
       })
       .filter(i => i);
-  }
-
-  function prettyPrintError(filePath, error) {
-    if (error.code === 'ENOENT') {
-      return 'file not found';
-    }
-    let errStr = error.toString ? error.toString() : String(error.message);
-
-    // coffeescipt errors will have [stdin] when prettyPrinted (because they are
-    // parsed from stdin). So lets replace that with the real file path
-    if (errStr.indexOf('[stdin]') > -1) {
-      errStr = errStr.replace('[stdin]', filePath);
-    } else {
-      errStr = filePath + ': ' + errStr;
-    }
-
-    return errStr;
   }
 
   return api;
