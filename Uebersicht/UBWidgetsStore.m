@@ -130,6 +130,12 @@
     settings = [[NSMutableDictionary alloc] init];
 }
 
+- (void)reset:(NSDictionary*)state
+{
+    widgets = [(NSDictionary*)state[@"widgets"] mutableCopy];
+    settings = [(NSDictionary*)state[@"settings"] mutableCopy];
+}
+
 - (NSDictionary*)get:(NSString*)widgetId
 {
     NSMutableDictionary* widget;

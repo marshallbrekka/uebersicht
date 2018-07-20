@@ -121,6 +121,21 @@ int const PORT = 41416;
     [self listenToWallpaperChanges];
 }
 
+- (NSDictionary*)fetchState
+{
+    [[UBWebSocket sharedSocket] open:[self serverUrl:@"ws"]];
+    NSURL *urlPath = [[self serverUrl:@"http"] URLByAppendingPathComponent: @"state/"];
+    NSData *jsonData = [NSData dataWithContentsOfURL:urlPath];
+    NSError *error = nil;
+    NSDictionary *dataDictionary = [NSJSONSerialization
+        JSONObjectWithData: jsonData
+        options: NSJSONReadingMutableContainers
+        error: &error
+    ];
+    if (error) NSLog(@"%@", error);
+    return dataDictionary;
+}
+
 - (void)startUp
 {
 
@@ -129,8 +144,7 @@ int const PORT = 41416;
     void (^handleData)(NSString*) = ^(NSString* output) {
         // note that these might be called several times
         if ([output rangeOfString:@"server started"].location != NSNotFound) {
-            [self->widgetsStore reset];
-            [[UBWebSocket sharedSocket] open:[self serverUrl:@"ws"]];
+            [self->widgetsStore reset: [self fetchState]];
             // this will trigger a render
             [self->screensController syncScreens:self];
 
