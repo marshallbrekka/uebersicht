@@ -28,7 +28,7 @@ module.exports = function ErrorDetails(props) {
     html('p', {key: 'p'}, 'in ' + props.path + ':'),
     html('table', {style: table, key: 'table'},
       html('tbody', {style: code},
-        lines.map((l, i) => {
+        (lines || []).map((l, i) => {
           const args = {key: i, hasError: l.lineNum === line, column: column};
           return ErrorLine(Object.assign({}, l, args));
         })
