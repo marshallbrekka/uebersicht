@@ -339,9 +339,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		DC43AD7B17EC2D9500241CC2 /* Übersicht */ = {
+		DC43AD7B17EC2D9500241CC2 /* Uebersicht */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DC43ADAD17EC2D9500241CC2 /* Build configuration list for PBXNativeTarget "Übersicht" */;
+			buildConfigurationList = DC43ADAD17EC2D9500241CC2 /* Build configuration list for PBXNativeTarget "Uebersicht" */;
 			buildPhases = (
 				DC06A1C01985092700789130 /* Compile JS */,
 				DC43AD7817EC2D9500241CC2 /* Sources */,
@@ -353,7 +353,7 @@
 			);
 			dependencies = (
 			);
-			name = "Übersicht";
+			name = Uebersicht;
 			productName = "Übersicht";
 			productReference = DC43AD7C17EC2D9500241CC2 /* Übersicht.app */;
 			productType = "com.apple.product-type.application";
@@ -413,7 +413,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DC43AD7B17EC2D9500241CC2 /* Übersicht */,
+				DC43AD7B17EC2D9500241CC2 /* Uebersicht */,
 				DC43AD9C17EC2D9500241CC2 /* UebersichtTests */,
 			);
 		};
@@ -509,7 +509,7 @@
 /* Begin PBXTargetDependency section */
 		DC43ADA217EC2D9500241CC2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = DC43AD7B17EC2D9500241CC2 /* Übersicht */;
+			target = DC43AD7B17EC2D9500241CC2 /* Uebersicht */;
 			targetProxy = DC43ADA117EC2D9500241CC2 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -753,7 +753,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DC43ADAD17EC2D9500241CC2 /* Build configuration list for PBXNativeTarget "Übersicht" */ = {
+		DC43ADAD17EC2D9500241CC2 /* Build configuration list for PBXNativeTarget "Uebersicht" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC43ADAE17EC2D9500241CC2 /* Debug */,
