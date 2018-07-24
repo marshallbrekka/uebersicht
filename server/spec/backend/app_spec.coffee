@@ -5,7 +5,7 @@ httpGet = require '../helpers/httpGet'
 httpPost = require '../helpers/httpPost'
 
 Server = require '../../src/app.coffee'
-server = Server(3030, '../spec/test_widgets', '../spec/test_files')
+server = Server(3030, './spec/test_widgets', './spec/test_files', './public')
 host = 'localhost:3030'
 
 WebSocket = require 'ws'
@@ -105,8 +105,9 @@ test 'closing', (t) ->
 test 'when a login shell option is provided', (t) ->
   server = Server(
     3030,
-    '../spec/test_widgets',
-    '../spec/test_files',
+    './spec/test_widgets',
+    './spec/test_files',
+    './public'
     loginShell: true,
   )
   httpPost(
