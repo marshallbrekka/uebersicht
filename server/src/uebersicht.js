@@ -1,5 +1,5 @@
 import run from './runShellCommand';
 import request from 'superagent';
-import {css} from 'emotion';
+import styled, {css} from 'react-emotion';
 
-export {run, request, css};
+export {run, request, css, styled};

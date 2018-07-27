@@ -9,6 +9,7 @@ const jsxTransform = require('babel-plugin-transform-react-jsx');
 const restSpreadTransform = require('babel-plugin-transform-object-rest-spread');
 const envPreset = require('babel-preset-env');
 const through = require('through2');
+const emotionPlugin = require('babel-plugin-emotion');
 
 function wrapJSWidget() {
   let start = true;
