@@ -110,6 +110,12 @@ module.exports = ClassicWidget = (widgetObject) ->
       contentEl.innerHTML = error.message + '\n' + (error.lines || '')
       console.error "#{implementation.id}:", error
       return rendered = false
+    else
+      contentEl.style.fontFamily = ''
+      contentEl.style.fontSize = ''
+      contentEl.style.whiteSpace = ''
+      contentEl.style.background = ''
+      contentEl.style.padding = ''
 
     try
       renderOutput output

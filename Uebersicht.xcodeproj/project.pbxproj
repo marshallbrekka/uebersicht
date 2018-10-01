@@ -469,7 +469,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export PATH=$PATH:/usr/local/bin\ncd server && npm run-script release";
+			shellScript = "export PATH=$PATH:/usr/local/bin\ncd server && npm run-script release\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
