@@ -48,8 +48,6 @@
     "react-emotion": "^9.2.6",
     "redux": "^3.7.2",
     "serve-static": "^1.13.1",
-    "snabbdom": "^0.7.0",
-    "snabbdom-pragma": "^2.6.0",
     "source-map": "^0.7.3",
     "stylus": "~0.54.5",
     "superagent": "^3.6.3",
