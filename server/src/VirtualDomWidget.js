@@ -1,15 +1,10 @@
 const RenderLoop = require('./RenderLoop');
 const Timer = require('./Timer');
 const runCommand = require('./runCommand');
-const snabbdom = require('snabbdom');
-const html = require('snabbdom-jsx').html;
-
-const patch = snabbdom.init([
-  require('snabbdom/modules/class').default,
-  require('snabbdom/modules/props').default,
-  require('snabbdom/modules/style').default,
-  require('snabbdom/modules/eventlisteners').default,
-]);
+const ReactDom = require('react-dom');
+const html = require('react').createElement;
+const ErrorDetails = require('./ErrorDetails');
+window.html = html;
 
 const defaults = {
   id: 'widget',
@@ -18,96 +13,124 @@ const defaults = {
   render: function render(props) {
     return html('div', null, props.output);
   },
-  updateProps: function updateProps(props, action) {
+  updateState: function updateState(action) {
     if (action.type === 'UB/COMMAND_RAN') {
       return { error: action.error, output: action.output };
-    } else {
-      return props;
     }
+    return props;
   },
-  initialProps: { output: '', error: null },
+  initialState: { output: '', error: null },
 };
 
 module.exports = function VirtualDomWidget(widgetObject) {
   const api = {};
   let implementation;
-  let wrapperEl;
+  let contentEl;
   let commandLoop;
   let renderLoop;
+  let currentError;
 
   function init(widget) {
-    implementation = eval(widget.body)(widget.id);
-    implementation.id = widget.id;
-
-    for (var k in defaults) {
-      if (implementation[k] === undefined ||
-          implementation[k] === null) {
-        implementation[k] = defaults[k];
-      }
-    }
-
+    currentError = widget.error ? JSON.parse(widget.error) : undefined;
+    implementation = Object.create(defaults);
+    Object.assign(implementation, widget.implementation || {}, {id: widget.id});
     return api;
   }
 
   function start() {
-    implementation.init();
-    commandLoop = Timer()
-      .map((done) => {
-        runCommand(implementation, (err, output) => {
-          dispatch({ type: 'UB/COMMAND_RAN', error: err, output: output });
-          done(implementation.refreshFrequency);
-        });
-      })
-      .start();
+    if (currentError) {
+      renderErrorDetails(currentError);
+      return;
+    }
+    if (renderLoop) {
+      renderLoop.update(renderLoop.state); // force redraw
+    } else {
+      renderLoop = RenderLoop(implementation.initialState, render);
+    }
+    run();
+  }
+
+  function run() {
+    implementation.init(dispatch);
+    commandLoop = Timer().start().map((done) => {
+      try {
+        runWidgetCommand(done);
+      } catch (err) {
+        handleError(err);
+      }
+    });
+  }
+
+  function runWidgetCommand(done) {
+    runCommand(
+      implementation,
+      (err, output) => {
+        dispatch({ type: 'UB/COMMAND_RAN', error: err, output: output });
+        done(implementation.refreshFrequency);
+      },
+      dispatch
+    );
   }
 
   function dispatch(action) {
-    renderLoop.update(
-      implementation.updateProps(renderLoop.state, action)
-    );
+    try {
+      const nextState = implementation.updateState(action, renderLoop.state);
+      renderLoop.update(nextState);
+    } catch (err) {
+      handleError(err);
+    }
+  }
+
+  function fetchErrorDetails(err) {
+    return fetch(
+      `/widgets/${widgetObject.id}?line=${err.line}&column=${err.column}`
+      )
+      .then(res => res.json());
   }
 
   function render(state) {
     try {
-      return implementation.render(state, dispatch);
-    } catch (e) {
-      console.error(e);
-      return html('div', {}, e.message);
+      ReactDom.render(implementation.render(state, dispatch), contentEl);
+    } catch (err) {
+      handleError(err);
     }
   }
 
+  function handleError(err) {
+    currentError = err;
+    commandLoop.stop();
+    fetchErrorDetails(err).then(details => {
+      if (err !== currentError) return;
+      renderErrorDetails(Object.assign({message: err.message}, details));
+    });
+  }
+
+  function renderErrorDetails(details) {
+    ReactDom.render(html(ErrorDetails, details), contentEl);
+  }
+
   api.create = function create() {
-    const contentEl = document.createElement('div');
-    wrapperEl = document.createElement('div');
-    wrapperEl.id = implementation.id;
-    wrapperEl.className = 'widget';
-    wrapperEl.appendChild(contentEl);
-    document.body.appendChild(wrapperEl);
-
-    renderLoop = RenderLoop(
-      implementation.initialProps,
-      render,
-      patch,
-      contentEl
-    );
-
+    contentEl = document.createElement('div');
+    contentEl.id = implementation.id;
+    contentEl.className = 'widget';
+    document.body.appendChild(contentEl);
     start();
-    return wrapperEl;
+    return contentEl;
   };
 
   api.destroy = function destroy() {
-    commandLoop.stop();
-    if (wrapperEl && wrapperEl.parentNode) {
-      wrapperEl.parentNode.removeChild(wrapperEl);
+    commandLoop && commandLoop.stop();
+    if (contentEl && contentEl.parentNode) {
+      contentEl.parentNode.removeChild(contentEl);
     }
     renderLoop = null;
-    wrapperEl = null;
+    contentEl = null;
+    currentError = null;
   };
 
   api.update = function update(newImplementation) {
-    commandLoop.stop();
+    commandLoop && commandLoop.stop();
     init(newImplementation);
-    renderLoop.update(renderLoop.state); // force redraw
     start();
   };
 

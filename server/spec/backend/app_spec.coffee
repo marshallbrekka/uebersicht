@@ -5,7 +5,7 @@ httpGet = require '../helpers/httpGet'
 httpPost = require '../helpers/httpPost'
 
 Server = require '../../src/app.coffee'
-server = Server(3030, '../spec/test_widgets', '../spec/test_files')
+server = Server(3030, './spec/test_widgets', './spec/test_files', './public')
 host = 'localhost:3030'
 
 WebSocket = require 'ws'
@@ -103,17 +103,21 @@ test 'closing', (t) ->
     t.end()
 
 test 'when a login shell option is provided', (t) ->
+  t.timeoutAfter(1000)
   server = Server(
     3030,
-    '../spec/test_widgets',
-    '../spec/test_files',
-    loginShell: true,
+    './spec/test_widgets',
+    './spec/test_files',
+    './public'
+    {loginShell: true},
+    () ->
+      httpPost(
+        "http://localhost:3030/run/",
+        "echo $(shopt | grep login_shell)",
+        (res, body) ->
+          t.equal(body, 'login_shell on\n', 'it indeed runs in a login shell')
+          t.end()
+          process.exit()
+      )
   )
-  httpPost(
-    "http://#{host}/run/",
-    "echo $(shopt | grep login_shell)",
-    (res, body) ->
-      t.equal(body, 'login_shell on\n', 'it indeed runs in a login shell')
-      server.close()
-      t.end()
-  )
+
