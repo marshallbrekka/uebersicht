@@ -14,7 +14,7 @@
   },
   "author": "Felix Hageloh",
   "license": "GPL v3 <http://www.gnu.org/licenses/>",
-"private": true,
+  "private": true,
   "devDependencies": {
     "coffee-script": "^1.12.7",
     "sinon": "^4.0.1",
