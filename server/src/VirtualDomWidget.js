@@ -112,7 +112,10 @@ module.exports = function VirtualDomWidget(widgetObject) {
   api.create = function create() {
     contentEl = document.createElement('div');
     contentEl.id = implementation.id;
-    contentEl.className = 'widget';
+    contentEl.classList.add('widget');
+    if (implementation.className) {
+      contentEl.classList.add(implementation.className);
+    }
     document.body.appendChild(contentEl);
     start();
     return contentEl;
@@ -130,7 +133,11 @@ module.exports = function VirtualDomWidget(widgetObject) {
 
   api.update = function update(newImplementation) {
     commandLoop && commandLoop.stop();
+    contentEl.classList.remove(implementation.className);
     init(newImplementation);
+    if (implementation.className) {
+      contentEl.classList.add(implementation.className);
+    }
     start();
   };
 
