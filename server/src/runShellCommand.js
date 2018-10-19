@@ -11,6 +11,8 @@ module.exports = function runShellCommand(command, callback) {
   const request = post('/run/').send(command);
   return callback
     ? request.end((err, res) => callback(wrapError(err, res), (res || {}).text))
-    : request.catch(err => { throw wrapError(err, err.res); })
+    : request
+      .catch(err => { throw wrapError(err, err.res); })
+      .then(res => res.text)
     ;
 };

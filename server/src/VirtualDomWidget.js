@@ -1,6 +1,6 @@
 const RenderLoop = require('./RenderLoop');
 const Timer = require('./Timer');
-const runCommand = require('./runCommand');
+const runShellCommand = require('./runShellCommand');
 const ReactDom = require('react-dom');
 const html = require('react').createElement;
 const ErrorDetails = require('./ErrorDetails');
@@ -53,23 +53,37 @@ module.exports = function VirtualDomWidget(widgetObject) {
   function run() {
     implementation.init(dispatch);
     commandLoop = Timer().start().map((done) => {
-      try {
-        runWidgetCommand(done);
-      } catch (err) {
-        handleError(err);
-      }
+      execWidgetCommand()
+        .then(commandCompleted)
+        .catch(commandErrored)
+        .then(() => done(implementation.refreshFrequency));
     });
   }
 
-  function runWidgetCommand(done) {
-    runCommand(
-      implementation,
-      (err, output) => {
-        dispatch({ type: 'UB/COMMAND_RAN', error: err, output: output });
-        done(implementation.refreshFrequency);
-      },
-      dispatch
-    );
+  function commandCompleted(output) {
+    dispatch({ type: 'UB/COMMAND_RAN', output });
+  }
+
+  function commandErrored(error) {
+    dispatch({ type: 'UB/COMMAND_RAN', error });
+  }
+
+  const runCommandFunction = (command) => {
+    try {
+      command.apply(implementation, [dispatch]);
+    } catch (err) {
+      handleError(err);
+    }
+  }
+
+  function execWidgetCommand() {
+    const {command, refreshFrequency} = implementation;
+    if (typeof command === 'function')
+      return Promise.resolve(runCommandFunction(command));
+    else if (typeof command === 'string')
+      return runShellCommand(command);
+    else
+      return  Promise.resolve();
   }
 
   function dispatch(action) {
