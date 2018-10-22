@@ -11,7 +11,7 @@ const defaults = {
   refreshFrequency: 1000,
   init: function init() {},
   render: function render(props) {
-    return html('div', null, props.output);
+    return html('div', null, props.error ? String(props.error) : props.output );
   },
   updateState: function updateState(action) {
     if (action.type === 'UB/COMMAND_RAN') {

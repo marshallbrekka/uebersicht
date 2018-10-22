@@ -12,7 +12,7 @@ module.exports = function runShellCommand(command, callback) {
   return callback
     ? request.end((err, res) => callback(wrapError(err, res), (res || {}).text))
     : request
-      .catch(err => { throw wrapError(err, err.res); })
+      .catch(err => { throw wrapError(err, err.response); })
       .then(res => res.text)
     ;
 };
