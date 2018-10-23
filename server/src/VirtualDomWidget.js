@@ -14,10 +14,7 @@ const defaults = {
     return html('div', null, props.error ? String(props.error) : props.output );
   },
   updateState: function updateState(action) {
-    if (action.type === 'UB/COMMAND_RAN') {
-      return { error: action.error, output: action.output };
-    }
-    return props;
+    return { error: action.error, output: action.output };
   },
   initialState: { output: '', error: null },
 };
@@ -52,6 +49,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
 
   function run() {
     implementation.init(dispatch);
+    if (!implementation.command) return;
     commandLoop = Timer().start().map((done) => {
       execWidgetCommand()
         .then(commandCompleted)
@@ -83,7 +81,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
     else if (typeof command === 'string')
       return runShellCommand(command);
     else
-      return  Promise.resolve();
+      return Promise.resolve();
   }
 
   function dispatch(action) {
