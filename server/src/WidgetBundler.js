@@ -45,7 +45,7 @@ module.exports = function WidgetBundler() {
 
   function WidgetBundle(id, filePath, callback) {
     const bundle = bundleWidget(id, filePath);
-    const buildWidget = () => {
+    const buildWidget = (paths = []) => {
       const widget = {
         id: id,
         filePath: filePath,
@@ -60,7 +60,7 @@ module.exports = function WidgetBundler() {
             widget.body = srcBuffer.toString();
           }
 
-          widget.mtime = fs.statSync(filePath).mtime;
+          widget.mtime = fs.statSync(paths[0] || filePath).mtime;
           bundle.widget = widget;
           callback(widget);
         });
