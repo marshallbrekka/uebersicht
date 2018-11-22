@@ -12,6 +12,8 @@ Settings = require('./Settings')
 StateServer = require('./StateServer')
 ensureSameOrigin = require('./ensureSameOrigin')
 disallowIFraming = require('./disallowIFraming')
+authenticate = require('./authenticate')
+authorize = require('./authorize')
 CommandServer = require('./command_server.coffee')
 serveWidgets = require('./serveWidgets')
 serveClient = require('./serveClient')
@@ -64,17 +66,19 @@ module.exports = (port, widgetPath, settingsPath, publicPath, options, callback)
     settings.persist(store.getState().settings)
 
   # set up the server
+  indexHTML = fs.readFileSync(path.join(publicPath, 'index.html'))
   host = "127.0.0.1"
   messageBus = null
   middleware = connect()
     .use(disallowIFraming)
     .use(ensureSameOrigin("http://#{host}:#{port}"))
-    .use(CommandServer(widgetPath, options.loginShell))
     .use(StateServer(store))
+    .use(authenticate(indexHTML))
+    .use(authorize())
+    .use(CommandServer(widgetPath, options.loginShell))
     .use(serveWidgets(bundler, widgetPath))
     .use(serveStatic(publicPath))
     .use(serveStatic(widgetPath))
-    .use(serveClient(publicPath))
 
   server = http.createServer(middleware)
   server.keepAliveTimeout = 30000

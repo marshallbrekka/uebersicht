@@ -29,7 +29,23 @@
 - (void)load:(NSURL*)newUrl
 {
     url = newUrl;
-    [(WKWebView*)view loadRequest:[NSURLRequest requestWithURL: newUrl]];
+    NSHTTPCookie* cookie = [NSHTTPCookie cookieWithProperties: @{
+        NSHTTPCookieDomain: url.host,
+        NSHTTPCookiePort: url.port,
+        NSHTTPCookiePath: @"/",
+        NSHTTPCookieName: @"identity",
+        NSHTTPCookieValue: @"itsme",
+        @"HttpOnly": @YES,
+    }];
+    
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL: newUrl];
+    NSDictionary* headers = [NSHTTPCookie
+        requestHeaderFieldsWithCookies: @[cookie]
+    ];
+    for(NSString* key in headers) {
+        [request setValue:headers[key] forHTTPHeaderField:key];
+    }
+    [(WKWebView*)view loadRequest: request];
 }
 
 - (void)reload
