@@ -6,6 +6,19 @@
     <link rel="stylesheet" type="text/css" href="main.css">
 
     <script type="text/javascript" src='client.js'></script>
+    <meta name="referrer" content="strict-origin">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        style-src self 'unsafe-inline';
+        connect-src *;
+        img-src *;
+        media-src *;
+        font-src *;
+        frame-src *;
+      "
+    >
   </head>
   <body>
     <div id='__uebersicht'></div>
