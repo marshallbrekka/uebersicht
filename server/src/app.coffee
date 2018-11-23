@@ -96,7 +96,7 @@ module.exports = (
   server.listen port, host, (err) ->
     try
       return server.emit('error', err) if err
-      messageBus = MessageBus(server: server)
+      messageBus = MessageBus(server: server, sessionToken: sessionToken)
       sharedSocket.open("ws://#{host}:#{port}")
       callback?()
     catch e
