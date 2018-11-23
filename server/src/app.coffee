@@ -25,8 +25,18 @@ resolveWidget = require('./resolveWidget')
 dispatchToRemote = require('./dispatch')
 listenToRemote = require('./listen')
 
-module.exports = (port, widgetPath, settingsPath, publicPath, options, callback) ->
+module.exports = (
+  port,
+  authToken,
+  widgetPath,
+  settingsPath,
+  publicPath,
+  options,
+  callback
+) ->
   options ||= {}
+
+  throw new Error('auth token required') unless !!authToken
 
   # global store for app state
   store = redux.createStore(
@@ -73,7 +83,7 @@ module.exports = (port, widgetPath, settingsPath, publicPath, options, callback)
     .use(disallowIFraming)
     .use(ensureSameOrigin("http://#{host}:#{port}"))
     .use(StateServer(store))
-    .use(authenticate(indexHTML))
+    .use(authenticate(authToken, indexHTML))
     .use(authorize())
     .use(CommandServer(widgetPath, options.loginShell))
     .use(serveWidgets(bundler, widgetPath))

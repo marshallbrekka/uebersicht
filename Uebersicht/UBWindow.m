@@ -56,9 +56,9 @@
 
 
 
-- (void)loadUrl:(NSURL*)url
+- (void)loadUrl:(NSURL*)url withIdentity:(NSString*)identity
 {
-    [webViewController load:url];
+    [webViewController load:url withIdentity:identity];
 }
 
 - (void)reload

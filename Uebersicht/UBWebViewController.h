@@ -14,7 +14,7 @@
 @property (strong, readonly) NSView* view;
 
 - (id)initWithFrame:(NSRect)frame;
-- (void)load:(NSURL*)url;
+- (void)load:(NSURL*)url withIdentity:(NSString*)identity;
 - (void)reload;
 - (void)redraw;
 - (void)destroy;

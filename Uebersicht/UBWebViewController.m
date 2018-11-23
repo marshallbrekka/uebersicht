@@ -26,7 +26,7 @@
      return self;
 }
 
-- (void)load:(NSURL*)newUrl
+- (void)load:(NSURL*)newUrl withIdentity:(NSString *)identity
 {
     url = newUrl;
     NSHTTPCookie* cookie = [NSHTTPCookie cookieWithProperties: @{
@@ -34,7 +34,7 @@
         NSHTTPCookiePort: url.port,
         NSHTTPCookiePath: @"/",
         NSHTTPCookieName: @"identity",
-        NSHTTPCookieValue: @"itsme",
+        NSHTTPCookieValue: identity,
         @"HttpOnly": @YES,
     }];
     

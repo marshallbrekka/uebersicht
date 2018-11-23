@@ -13,11 +13,13 @@ try
   port = args.p ? args.port ? 41416
   settingsPath = path.resolve(__dirname, args.s ? args.settings ? './settings')
   publicPath = path.resolve(__dirname, './public')
+  authToken = args.a
   options =
     loginShell: args['login-shell']
 
   server = UebersichtServer(
     Number(port),
+    authToken,
     widgetPath,
     settingsPath,
     publicPath,

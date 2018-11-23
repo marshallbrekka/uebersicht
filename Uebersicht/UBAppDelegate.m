@@ -39,12 +39,23 @@ int const PORT = 41416;
     UBWidgetsController* widgetsController;
     NSMutableDictionary* windows;
     BOOL needsRefresh;
+    NSString* identity;
 }
 
 @synthesize statusBarMenu;
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
+
+    NSMutableData* rand = [NSMutableData dataWithLength:64];
+    int result = SecRandomCopyBytes(
+        kSecRandomDefault,
+        rand.length,
+        rand.mutableBytes
+    );
+    NSAssert(result == 0, @"Error estabilshing identity: %d", errno);
+    identity = [rand base64EncodedStringWithOptions:0];
+
     needsRefresh = YES;
     windows = [[NSMutableDictionary alloc] initWithCapacity:42];
     statusBarItem = [self addStatusItemToMenu: statusBarMenu];
@@ -259,6 +270,7 @@ int const PORT = 41416;
         @"-d", widgetPath,
         @"-p", [NSString stringWithFormat:@"%d", PORT + portOffset],
         @"-s", [[self getPreferencesDir] path],
+        @"-a", identity,
         loginShell ? @"--login-shell" : @""
     ]];
     
@@ -311,15 +323,13 @@ int const PORT = 41416;
         if (![windows objectForKey:screenId]) {
             window = [[UBWindow alloc] init];
             [windows setObject:window forKey:screenId];
-            
-            [window loadUrl:[
-                [self serverUrl:@"http"]
-                    URLByAppendingPathComponent:[NSString
-                        stringWithFormat:@"%@",
-                        screenId
-                    ]
+            NSURL* url = [[self serverUrl:@"http"]
+                URLByAppendingPathComponent:[NSString
+                    stringWithFormat:@"%@",
+                    screenId
                 ]
             ];
+            [window loadUrl:url withIdentity:identity];
         } else {
             window = windows[screenId];
             if (needsRefresh) {
