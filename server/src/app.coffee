@@ -77,18 +77,19 @@ module.exports = (
 
   # set up the server
   indexHTML = fs.readFileSync(path.join(publicPath, 'index.html'))
+  sessionToken = require('crypto').randomBytes(64).toString('base64')
   host = "127.0.0.1"
   messageBus = null
   middleware = connect()
     .use(disallowIFraming)
     .use(ensureSameOrigin("http://#{host}:#{port}"))
-    .use(authenticate(authToken, indexHTML))
-    .use(authorize())
+    .use(authenticate(authToken, sessionToken, indexHTML))
+    .use(authorize(sessionToken))
     .use(StateServer(store))
     .use(CommandServer(widgetPath, options.loginShell))
     .use(serveWidgets(bundler, widgetPath))
-    .use(serveStatic(publicPath))
-    .use(serveStatic(widgetPath))
+    .use(serveStatic(publicPath, {index: false}))
+    .use(serveStatic(widgetPath, {index: false}))
 
   server = http.createServer(middleware)
   server.keepAliveTimeout = 30000
