@@ -132,10 +132,38 @@ int const PORT = 41416;
     [self listenToWallpaperChanges];
 }
 
+- (void)authorize
+{
+    NSURL* url =  [self serverUrl:@"http"];
+    NSHTTPCookie* cookie = [NSHTTPCookie cookieWithProperties: @{
+        NSHTTPCookieDomain: url.host,
+        NSHTTPCookiePort: url.port,
+        NSHTTPCookiePath: @"/",
+        NSHTTPCookieName: @"identity",
+        NSHTTPCookieValue: identity,
+        @"HttpOnly": @YES,
+    }];
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL: url];
+    NSDictionary* headers = [NSHTTPCookie
+        requestHeaderFieldsWithCookies: @[cookie]
+    ];
+    for(NSString* key in headers) {
+        [request setValue:headers[key] forHTTPHeaderField:key];
+    }
+    [NSURLConnection
+        sendSynchronousRequest:request
+        returningResponse:nil
+        error:nil
+    ];
+}
+
 - (NSDictionary*)fetchState
 {
+    [self authorize];
     [[UBWebSocket sharedSocket] open:[self serverUrl:@"ws"]];
-    NSURL *urlPath = [[self serverUrl:@"http"] URLByAppendingPathComponent: @"state/"];
+    NSURL *urlPath = [[self serverUrl:@"http"]
+        URLByAppendingPathComponent: @"state/"
+    ];
     NSData *jsonData = [NSData dataWithContentsOfURL:urlPath];
     NSError *error = nil;
     NSDictionary *dataDictionary = [NSJSONSerialization
