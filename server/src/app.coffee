@@ -82,12 +82,12 @@ module.exports = (
   messageBus = null
   middleware = connect()
     .use(disallowIFraming)
-    .use(ensureSameOrigin("http://#{host}:#{port}"))
     .use(authenticate(authToken, sessionToken, indexHTML))
     .use(authorize(sessionToken))
     .use(StateServer(store))
-    .use(CommandServer(widgetPath, options.loginShell))
     .use(serveWidgets(bundler, widgetPath))
+    .use(ensureSameOrigin("http://#{host}:#{port}"))
+    .use(CommandServer(widgetPath, options.loginShell))
     .use(serveStatic(publicPath, {index: false}))
     .use(serveStatic(widgetPath, {index: false}))
 
