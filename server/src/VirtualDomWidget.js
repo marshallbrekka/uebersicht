@@ -35,7 +35,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
     return api;
   }
 
-  function start() {
+  function start(screen) {
     if (currentError) {
       renderErrorDetails(currentError);
       return;
@@ -45,11 +45,11 @@ module.exports = function VirtualDomWidget(widgetObject) {
     } else {
       renderLoop = RenderLoop(implementation.initialState, render);
     }
-    run();
+    run(screen);
   }
 
-  function run() {
-    implementation.init(dispatch);
+  function run(screen) {
+    implementation.init(dispatch, {screen_id: screen});
     if (!implementation.command) return;
     commandLoop = Timer()
       .start()
@@ -121,7 +121,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
     ReactDom.render(html(ErrorDetails, details), contentEl);
   }
 
-  api.create = function create() {
+  api.create = function create(screen) {
     contentEl = document.createElement('div');
     contentEl.id = implementation.id;
     contentEl.classList.add('widget');
@@ -129,7 +129,7 @@ module.exports = function VirtualDomWidget(widgetObject) {
       contentEl.classList.add(css(implementation.className));
     }
     document.body.appendChild(contentEl);
-    start();
+    start(screen);
     return contentEl;
   };
 
@@ -143,14 +143,14 @@ module.exports = function VirtualDomWidget(widgetObject) {
     currentError = null;
   };
 
-  api.update = function update(newImplementation) {
+  api.update = function update(newImplementation, screen) {
     commandLoop && commandLoop.stop();
     contentEl.classList.remove(css(implementation.className));
     init(newImplementation);
     if (implementation.className) {
       contentEl.classList.add(css(implementation.className));
     }
-    start();
+    start(screen);
   };
 
   api.forceRefresh = function forceRefresh() {

@@ -19,17 +19,17 @@ function isVisibleOnScreen(widgetId, screenId, state) {
   return isVisible;
 }
 
-function renderWidget(widget, domEl) {
+function renderWidget(widget, domEl, screen) {
   var prevRendered = rendered[widget.id];
 
   if (prevRendered && prevRendered.widget.mtime === widget.mtime) {
     return;
   } else if (prevRendered) {
-    prevRendered.instance.update(widget);
+    prevRendered.instance.update(widget, screen);
     prevRendered.widget = widget;
   } else {
     var instance = Widget(widget);
-    domEl.appendChild(instance.create());
+    domEl.appendChild(instance.create(screen));
     rendered[widget.id] = {
       instance: instance,
       widget: widget,
@@ -51,7 +51,7 @@ function render(state, screen, domEl, dispatch) {
       continue;
     }
     if (widget.error || widget.implementation) {
-      renderWidget(widget, domEl, dispatch);
+      renderWidget(widget, domEl, screen);
     }
     const idx = remaining.indexOf(widget.id);
     if (idx > -1) {
